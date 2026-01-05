@@ -1,6 +1,7 @@
 """Configuration settings for the application."""
 from pydantic_settings import BaseSettings
 from typing import Optional
+import os
 
 
 class Settings(BaseSettings):
@@ -16,8 +17,16 @@ class Settings(BaseSettings):
     HOST: str = "0.0.0.0"
     PORT: int = 8000
     
-    # CORS Configuration
-    CORS_ORIGINS: list[str] = ["*"]
+    # CORS Configuration - read as string, will be parsed
+    CORS_ORIGINS: str = "*"
+    
+    def get_cors_origins(self) -> list[str]:
+        """Parse CORS_ORIGINS from string to list."""
+        cors_value = os.getenv("CORS_ORIGINS", self.CORS_ORIGINS)
+        if cors_value == "*":
+            return ["*"]
+        # Split by comma and strip whitespace
+        return [origin.strip() for origin in cors_value.split(",") if origin.strip()]
     
     class Config:
         env_file = ".env"
